@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!--使用getGenerateKeys 获区主键-->
+        <setting name="useGeneratedKeys" value="true"/>
+        <!--使用下划线转驼峰风格-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--使用列名替换-->
+        <setting name="useColumnLabel" value="true"/>
+    </settings>
+</configuration>
+

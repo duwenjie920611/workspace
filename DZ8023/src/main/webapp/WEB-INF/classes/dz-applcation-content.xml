@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xsi:schemaLocation="
+	  http://www.springframework.org/schema/beans
+	  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+	  http://www.springframework.org/schema/context 
+	  http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	  http://www.springframework.org/schema/util 
+	  http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	  http://www.springframework.org/schema/task
+      http://www.springframework.org/schema/task/spring-task-3.0.xsd
+	  http://www.springframework.org/schema/tx
+	  http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+	  http://www.springframework.org/schema/aop
+	  http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+	  
+	  http://www.springframework.org/schema/batch 
+	  http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+	  "
+	default-autowire="byName">
+
+	<!-- 注解扫描范围 -->
+	<context:component-scan base-package="com.dz.l8023.project" />
+
+	<import resource="classpath:spring/spring-dao.xml"/>   
+
+	<!-- 文件上传 --> 
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="10485760" />
+	</bean>
+
+	<!-- 定时器开关 -->
+	<task:annotation-driven /> 
+
+	<!-- 每天 10点执行 提醒用户去报销
+
+	<bean id="massSendTaskController"
+		class="com.nsl.project.wx.task.controller.MassSendTaskController"></bean>
+ 	-->
+	<!-- 每小时执行一次 推送IM失败的消息 
+	<task:scheduled-tasks>
+		<task:scheduled ref="massSendTaskController" method="run" cron="0 0 6 ? * ?" />
+	</task:scheduled-tasks>
+	-->
+
+	<!-- 配置service -->
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+		p:dataSource-ref="dataSource"/>
+
+	<!-- 通过aop配置提供失去增强，让service包下 所有的bean的所有方法拥有事务 -->
+	<aop:config proxy-target-class="false">
+		<aop:pointcut id="serviceMethod" expression="execution(* com.dz.l8023.project.service..*.*(..))"/>
+		<aop:advisor pointcut-ref="serviceMethod" advice-ref="txAdvice"	order="0"/>
+	</aop:config>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*" rollback-for="Exception" propagation="REQUIRED"></tx:method>
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- 注解管理事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	
+	<!-- spring batch 批处理任务
+	
+	<bean id = "jobRepository" class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean">
+	<property name="dataSource" ref="dataSource"/>
+	<property name="transactionManager" ref="transactionManager"/>
+	</bean>
+	
+	<bean id="jobLauncher" class ="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+	<property name="jobRepository" ref ="jobRepository"></property>
+	</bean>
+	
+	<bean id="skipPolicy"
+		class="org.springframework.batch.core.step.skip.AlwaysSkipItemSkipPolicy" />
+	
+	<batch:job id="userJob">
+		
+		<batch:step id="userStep">
+		
+		<batch:tasklet transaction-manager="transactionManager">
+		
+		<batch:transaction-attributes isolation="DEFAULT" propagation="REQUIRED" timeout="5"/>
+		
+		<batch:chunk reader="userReader" processor="userProcess" writer="userWriter" commit-interval="1" skip-policy="skipPolicy" >
+		
+		<batch:listeners></batch:listeners>
+		
+		</batch:chunk>
+		
+		</batch:tasklet>
+		
+		</batch:step>
+
+	</batch:job>
+	
+	<bean id = "userReader" class = "com.dz.l8023.project.sprbatch.StudentReader"/>
+	
+	<bean id = "userProcess" class = "com.dz.l8023.project.sprbatch.StudentProcess"/>
+	
+	<bean id = "userWriter"  class = "com.dz.l8023.project.sprbatch.StudentWriter"/>
+ -->
+<!-- 
+	<batch:job id="userAbtractJob">
+		<batch:step id="userAbstractStep">
+			<batch:tasklet transaction-manager="transactionManager">
+				<batch:transaction-attributes isolation="DEFAULT" propagation="REQUIRED" timeout="5"/>
+				<batch:chunk reader="userAbReader" processor="userAbProcess" writer="userAbWriter" skip-policy="skipPolicy" commit-interval="1">
+				</batch:chunk>
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+	
+	<bean id="userAbReader" class = "com.dz.l8023.project.slistbatch.UserReader"/>
+	
+	<bean id="userAbProcess" class = "com.dz.l8023.project.slistbatch.UserProcess"/>
+	
+	<bean id="userAbWriter" class = "com.dz.l8023.project.slistbatch.UserWriter"/>
+	
+	
+	 -->
+
+</beans>
